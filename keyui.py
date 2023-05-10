@@ -5,7 +5,7 @@ DEF_WIDTH = 1400
 DEF_HEIGHT = 300
 
 
-def create_ui(root, on_enter=None, on_leave=None, handleClick=None, on_key_press=None, on_key_release=None):
+def create_ui(root, on_enter=None, on_mouse_release=None,  handleClick=None, on_key_press=None, on_key_release=None):
     root.resizable(False, False)
 
     ACCENT_COL = "gray"
@@ -85,9 +85,8 @@ def create_ui(root, on_enter=None, on_leave=None, handleClick=None, on_key_press
                 label1 = None
                 label2 = None
             btn = Button(frame, activebackground=ACCENT_COL, text=i, bg="#333", fg="#fff", relief="flat", padx=padx,
-                         pady=pady,
-                         font=font(size=10), anchor=anchor)
-
+                         pady=pady, font=font(size=10), anchor=anchor)
+            btn.button_name = key
             # Reset the button's width
             if i in width15:
                 btnWidth = 1.5 * btnWidth
@@ -108,6 +107,8 @@ def create_ui(root, on_enter=None, on_leave=None, handleClick=None, on_key_press
             # btn.bind("<ButtonRelease-1>", on_leave)
             root.bind("<KeyPress>", on_key_press)
             root.bind("<KeyRelease>", on_key_release)
+            btn.bind("<Button-1>", handleClick)
+            btn.bind("<ButtonRelease-1>", on_mouse_release)
 
             btnLabels[btn] = (label1, label2)
             allButtons[key] = btn
