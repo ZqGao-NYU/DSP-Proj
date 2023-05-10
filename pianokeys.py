@@ -23,22 +23,22 @@ stream = p.open(
         frames_per_buffer = 128)
 # specify low frames_per_buffer to reduce latency
 
-CONTINUE = True
-KEYPRESS = False
+# CONTINUE = True
+# KEYPRESS = False
 
 # Parameters
 Ta = 2      # Decay time (seconds)
 f0 = 440
 
 # Calculate the filter coefficients for the new frequency
-om1 = 2.0 * pi * float(f0) / RATE
-r = 0.01 ** (1.0 / (Ta * RATE))
+# om1 = 2.0 * pi * float(f0) / RATE
+# r = 0.01 ** (1.0 / (Ta * RATE))
 
-a = [1, -2 * r * cos(om1), r ** 2]
-b = [r * sin(om1)]
+# a = [1, -2 * r * cos(om1), r ** 2]
+# b = [r * sin(om1)]
 ORDER = 2   # filter order
-states = np.zeros(ORDER)
-x = np.zeros(BLOCKLEN)
+# states = np.zeros(ORDER)
+# x = np.zeros(BLOCKLEN)
 
 # Define the frequencies for each key
 frequencies = {'113': 261.63, '119': 293.66, '101': 329.63, '114': 349.23, '116': 392, '121': 440, '117': 493.88,
@@ -74,40 +74,61 @@ def my_function(event):
 
     KEYPRESS = True
 
+#
+# root = Tk.Tk()
+# root.bind("<Key>", my_function)
 
-root = Tk.Tk()
-root.bind("<Key>", my_function)
+# print('Press keys for sound.')
+# print('Press "Esc" to quit')
 
-print('Press keys for sound.')
-print('Press "Esc" to quit')
+# while CONTINUE:
+#     root.update()
+#     # Pole radius and angle
+#     r = 0.01 ** (1.0 / (Ta * RATE))  # 0.01 for 1 percent amplitude
+#     om1 = 2.0 * pi * float(f0) / RATE
+#
+#     # Filter coefficients (second-order IIR)
+#     a = [1, -2 * r * cos(om1), r ** 2]
+#     b = [r * sin(om1)]
+#
+#     if KEYPRESS and CONTINUE:
+#         # Generate a new input signal for the filter
+#         x[0] = 10000.0
+#
+#     [y, states] = signal.lfilter(b, a, x, zi=states)
+#
+#     x[0] = 0.0
+#     KEYPRESS = False
+#
+#     y = np.clip(y.astype(int), -MAXVALUE, MAXVALUE)  # Clipping
+#
+#     binary_data = struct.pack('h' * BLOCKLEN, *y);  # Convert to binary binary data
+#     stream.write(binary_data, BLOCKLEN)  # Write binary binary data to audio output
 
-while CONTINUE:
-    root.update()
+
+def update(stream, f0, KEYPRESS, Ta, x, states, y):
     # Pole radius and angle
-    r = 0.01 ** (1.0 / (Ta * RATE))  # 0.01 for 1 percent amplitude
+    r = 0.01**(1.0 / (Ta * RATE))  # 0.01 for 1 percent amplitude
     om1 = 2.0 * pi * float(f0) / RATE
 
     # Filter coefficients (second-order IIR)
     a = [1, -2 * r * cos(om1), r ** 2]
     b = [r * sin(om1)]
 
-    if KEYPRESS and CONTINUE:
+    if KEYPRESS["KEYPRESS"]:
         # Generate a new input signal for the filter
         x[0] = 10000.0
 
     [y, states] = signal.lfilter(b, a, x, zi=states)
-
     x[0] = 0.0
-    KEYPRESS = False
+    KEYPRESS["KEYPRESS"] = False
 
     y = np.clip(y.astype(int), -MAXVALUE, MAXVALUE)  # Clipping
-
-    binary_data = struct.pack('h' * BLOCKLEN, *y);  # Convert to binary binary data
+    binary_data = struct.pack('h' * BLOCKLEN, *y)  # Convert to binary binary data
     stream.write(binary_data, BLOCKLEN)  # Write binary binary data to audio output
-
-print('* Done.')
+    return states
 
 # Close audio stream
-stream.stop_stream()
-stream.close()
-p.terminate()
+# stream.stop_stream()
+# stream.close()
+# p.terminate()
