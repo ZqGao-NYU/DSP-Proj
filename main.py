@@ -30,6 +30,7 @@ class PianoSimulator:
             output=True,
             frames_per_buffer=128)
         self.f0 = 440
+        self.notes = {}
         self.states = np.zeros(ORDER)
         self.x = np.zeros(BLOCKLEN)
         self.y = np.zeros(BLOCKLEN)
@@ -53,7 +54,8 @@ class PianoSimulator:
                 self.f0 = frequencies[str(ord(event.char) + 32)]
             else:
                 self.f0 = frequencies[str(ord(event.char))]
-            print(self.f0)
+            if not self.KEYPRESS["KEYPRESS"]:
+                self.x[0] = 10000.0
             self.KEYPRESS["KEYPRESS"] = True
 
         if event.keysym in self.buttons:
@@ -94,8 +96,9 @@ class PianoSimulator:
                     self.f0 = frequencies[str(ord(keysm) + 32)]
                 else:
                     self.f0 = frequencies[str(ord(keysm))]
-                print(self.f0)
-            self.KEYPRESS["KEYPRESS"] = True
+                if not self.KEYPRESS["KEYPRESS"]:
+                    self.x[0] = 10000.0
+                self.KEYPRESS["KEYPRESS"] = True
     def __on_mouse_release(self, event):
         keysm = event.widget.button_name
         print(keysm)
