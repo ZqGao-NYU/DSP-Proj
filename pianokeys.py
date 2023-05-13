@@ -106,22 +106,30 @@ def my_function(event):
 #     stream.write(binary_data, BLOCKLEN)  # Write binary binary data to audio output
 
 
-def update(stream, f0, KEYPRESS, Ta, x, states, y):
+def update(stream, Ta, states, notes):
     # Pole radius and angle
-    r = 0.01**(1.0 / (Ta * RATE))  # 0.01 for 1 percent amplitude
-    om1 = 2.0 * pi * float(f0) / RATE
 
-    # Filter coefficients (second-order IIR)
-    a = [1, -2 * r * cos(om1), r ** 2]
-    b = [r * sin(om1)]
+    size = len(notes)
+    this_y = np.zeros(BLOCKLEN)
+    cp = notes.copy()
+    for key, val in cp.items():
+        f, x, keypress, states = notes[key]
+        if not keypress:
+            if np.sum(np.abs(states)) < 10:
+                del notes[key]
+                cp[key] = [f, np.zeros(BLOCKLEN), keypress, np.zeros(ORDER)]
+        r = 0.01 ** (1.0 / (Ta * RATE))  # 0.01 for 1 percent amplitude
+        om1 = 2.0 * pi * float(f) / RATE
+        # Filter coefficients (second-order IIR)
+        a = [1, -2 * r * cos(om1), r ** 2]
+        b = [r * sin(om1)]
+        [y, states] = signal.lfilter(b, a, x, zi=states)
+        x[0] = 0.0
+        notes[key] = [f, x, keypress, states]
+        this_y = np.add(this_y, y / len(notes))
 
-
-
-    [y, states] = signal.lfilter(b, a, x, zi=states)
-    x[0] = 0.0
-
-    y = np.clip(y.astype(int), -MAXVALUE, MAXVALUE)  # Clipping
-    binary_data = struct.pack('h' * BLOCKLEN, *y)  # Convert to binary binary data
+    this_y = np.clip(this_y.astype(int), -MAXVALUE, MAXVALUE)  # Clipping
+    binary_data = struct.pack('h' * BLOCKLEN, *this_y)  # Convert to binary binary data
     stream.write(binary_data, BLOCKLEN)  # Write binary binary data to audio output
     return states
 
