@@ -36,7 +36,7 @@ Or you can go to this link to download the executable file (due to the limitatio
 
 The GUI of the project is very similar to the layout of the common keyboard on the PC. And all of the keys are remapped to the numeric musical notation.
 
-![image-20230512224906032](C:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20230512224906032.png)
+![image-20230512224906032](img/image-20230512224906032.png)
 
 Here is the details of the implementation:
 
