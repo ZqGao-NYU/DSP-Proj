@@ -1,9 +1,9 @@
 import tkinter as Tk
-from collections import deque
 
 import pyaudio
-from keyui import DEF_WIDTH, DEF_HEIGHT,create_ui
-from pianokeys import PA_FORMAT, frequencies, update, np, Ta, f0, CHANNELS, RATE, BLOCKLEN, ORDER
+from keyui import DEF_WIDTH, DEF_HEIGHT, create_ui
+from pianokeys import PA_FORMAT, frequencies, update, np, Ta,  CHANNELS, RATE, BLOCKLEN, ORDER, mapping
+
 
 class PianoSimulator:
     def __init__(self):
@@ -19,7 +19,8 @@ class PianoSimulator:
         self.root.title("Piano Simulator")
         self.root.geometry(f"{DEF_WIDTH - 80}x{DEF_HEIGHT - 40}")
         self.root.configure(bg="black")
-        self.buttons, self.btnLabels = create_ui(self.root, None, self.__on_mouse_release, self.__on_mouse_click, self.__on_key_press, self.__on_key_release)
+        self.buttons, self.btnLabels = create_ui(self.root, None, self.__on_mouse_release, self.__on_mouse_click,
+                                                 self.__on_key_press, self.__on_key_release)
 
     def __init_audio(self):
         # Open the audio output stream
@@ -48,7 +49,7 @@ class PianoSimulator:
         if event.keysym == 'Escape':
             self.CONTINUE = False
             return
-        if event.char.isalnum():
+        if event.char:
             # Update Frequency
             if ord(event.char) in range(65, 91):
                 self.f0 = frequencies[str(ord(event.char) + 32)]
@@ -84,8 +85,10 @@ class PianoSimulator:
         if event.keysym in self.notes:
             self.notes[event.keysym][2] = False
             self.notes[event.keysym][1] = np.zeros(BLOCKLEN)
+
     def __on_mouse_click(self, event):
         keysym = event.widget.button_name
+        print('You clicked ' + keysym)
         if keysym == 'Escape':
             self.CONTINUE = False
             return
@@ -96,27 +99,39 @@ class PianoSimulator:
                 if label:
                     label.config(bg="gray")
 
-            if keysym.isalnum():
-                # Update Frequency
-                if ord(keysym) in range(65, 91):
-                    self.f0 = frequencies[str(ord(keysym) + 32)]
-                else:
-                    self.f0 = frequencies[str(ord(keysym))]
-                if self.notes.get(keysym):
+            try:
+                if keysym.isalnum():
+                    # Update Frequency
+                    if ord(keysym) in range(65, 91):
+                        self.f0 = frequencies[str(ord(keysym) + 32)]
+                    else:
+                        self.f0 = frequencies[str(ord(keysym))]
+            except TypeError:
+                if keysym in mapping:
+                    key = mapping[keysym]
+                    self.f0 = frequencies[str(ord(key))]
+            if keysym in mapping or keysym.isalnum():
+                if not self.notes.get(keysym):
+                    x = np.zeros(BLOCKLEN)
+                    x[0] = 10000
+                    self.notes[keysym] = [self.f0, x, True, np.zeros(ORDER)]
+                elif not self.notes[keysym][2]:
                     self.notes[keysym][1][0] = 10000
+                    self.notes[keysym][2] = True
                 else:
-                    self.notes[keysym] = [self.f0, np.zeros(BLOCKLEN), True, np.zeros(ORDER)]
+                    self.notes[keysym][1][0] = 0
+
     def __on_mouse_release(self, event):
         keysym = event.widget.button_name
-        print(keysym)
         if keysym in self.buttons:
             btn = self.buttons[keysym]
             btn.config(bg="#333")
             for label in self.btnLabels[btn]:
                 if label:
                     label.config(bg="#333")
-        self.notes[keysym][2] = False
-        self.notes[keysym][1] = np.zeros(BLOCKLEN)
+        if keysym in self.notes:
+            self.notes[keysym][2] = False
+            self.notes[keysym][1] = np.zeros(BLOCKLEN)
 
 
 if __name__ == "__main__":
